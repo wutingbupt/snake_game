@@ -1,0 +1,238 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>Snake Game~~~First JavaScript trail</title>
+</head>
+<body>
+
+<script type="text/javascript">
+
+//Declare const
+const RIGHT = 39;
+const LEFT = 37;
+const UP = 38;
+const DOWN = 40;
+
+//Play ground size
+const WIDTH = 800;
+const HEIGHT = 600;
+
+//current snake direction
+var snake_direction = RIGHT;
+//Last snake direction
+var lastDirection = RIGHT;
+
+//Game score
+var score = 0;
+
+//Identify snake node array
+var nodeArray;
+
+var snakeArray;
+
+var gameTimer;
+
+function initNodeArray() {
+    var a = new Array();
+    var b = createNode(0, 0);
+    a.push(b);
+    a.unshift(createNode(0, 1));
+    return a;
+}
+
+function initGame(){
+    score = 0;
+    nodeArray = initNodeArray();
+    snakeArray = createArray(20, 40);
+    snakeArray[0][0] = 1;
+    snakeArray[0][1] = 1;
+}
+
+function createNode(a, b) {
+    var c = new Object();
+    c.x = a;
+    c.y = b;
+    return c;
+}
+
+function createFood() {
+    do {
+        var a = Math.floor(20 * Math.random());
+        var b = Math.floor(30 * Math.random());
+    } while (1 == snakeArray[a][b]);
+    snakeArray[a][b] = 2;
+}
+
+function createArray(a) {
+    var b = new Array(a || 0), c = a;
+    if (arguments.length > 1) {
+        var d = Array.prototype.slice.call(arguments, 1);
+        while (c--) b[a - 1 - c] = createArray.apply(this, d);
+    }
+    return b;
+}
+
+function getScreenWidth() {
+    return screen.width;
+}
+
+function getScreenHeight() {
+    return screen.height;
+}
+
+function drawCanvas() {
+    var a = (getScreenWidth() - 800) / 2;
+    var b = (getScreenHeight() - 600) / 2;
+    var c = document.getElementById("myCanvas");
+    c.width = 800;
+    c.height = 600;
+}
+
+function drawSnake() {
+    var a = document.getElementById("myCanvas");
+    var b = a.getContext("2d");
+    for (var c = 0; c < 20; c++)
+        for (var d = 0; d < 40; d++) {
+        b.beginPath();
+        if (1 == snakeArray[c][d]) {
+            b.rect(20 * d, 30 * c, 20, 30);
+            b.fillStyle = "red";
+            b.fill();
+        } else if (2 == snakeArray[c][d]) {
+            b.rect(20 * d, 30 * c, 20, 30);
+            b.fillStyle = "green";
+            b.fill();
+        } else {
+            b.rect(20 * d, 30 * c, 20, 30);
+            b.fillStyle = "white";
+            b.fill();
+        }
+    }
+}
+
+function onKeyPressed() {
+    var a = function(a) {
+        if (a.keyCode == 37 || a.keyCode == 38 || a.keyCode == 39 || a.keyCode == 40){
+         snake_direction = a.keyCode;
+        }
+    };
+    var b = document.getElementById("myCanvas");
+    b.addEventListener("keydown", a, false);
+    b.focus();
+}
+
+function appendFoodAsNode(a, b) {
+    if (2 == snakeArray[a][b]) {
+        var c = createNode(a, b);
+        snakeArray[a][b] = 1;
+        nodeArray.unshift(c);
+        score = score + 10;
+        var scoreLabel = document.getElementById("score");
+        scoreLabel.innerHTML = score;
+        createFood();
+    }
+}
+
+function internalMove(a, b) {
+
+    if (a<0 || a >=20 || b < 0 || b>=40){
+        clearInterval(gameTimer);
+          var canvas = document.getElementById('myCanvas');
+      var context = canvas.getContext('2d');
+      var imageObj = new Image();
+
+      imageObj.onload = function() {
+        context.drawImage(imageObj, 69, 50);
+      };
+      imageObj.src = 'img.jpg'
+        return;
+    }
+
+    if (2 == snakeArray[a][b]){
+          appendFoodAsNode(a, b);
+    } else {
+        var c = createNode(a, b);
+        snakeArray[c.x][c.y] = 1;
+        nodeArray.unshift(c);
+        var d = nodeArray.pop();
+        snakeArray[d.x][d.y] = 0;
+    }
+}
+
+function isIllegalOperation(){
+    var diff = Math.abs(snake_direction-lastDirection);
+    if (diff == 2){
+    return true;
+    }else{
+    return false;
+    }
+}
+function move() {
+    if (isIllegalOperation()){
+    snake_direction = lastDirection;
+    } else {
+        lastDirection = snake_direction;
+    }
+
+    var a = nodeArray[0].x;
+    var b = nodeArray[0].y;
+
+
+    switch (snake_direction) {
+      //Move left
+      case 37:
+        internalMove(a, --b);
+        break;
+
+      case 38:
+        internalMove(--a, b);
+        break;
+      //Move right
+      case 39:
+        internalMove(a, ++b);
+        break;
+
+      case 40:
+        internalMove(++a, b);
+    }
+    drawSnake();
+}
+
+function startGame() {
+    initGame();
+    gameTimer = window.setInterval("move()", 200);
+    createFood();
+}
+</script>
+
+
+<style>
+    #left,#right {float:left;border:1px solid red; padding:10px;}
+</style>
+
+<div id="scrore_board">
+    Your Score is: <label id="score"></label>
+</div>
+
+<div id="main ">
+    <div id="left">
+        <canvas id="myCanvas" style="border:1px solid #d3d3d3;" tabindex='0' contentEditable="true"></canvas>
+    </div>
+    <div id="right">
+        <button id="btn" onclick="startGame()">Start!</button>
+        <!-- 如果不用clear屬性可能會出現瀏覽器不兼容問題,clear設這元素周圍沒有浮動元素 -->
+        <div style="clear:both"></div>
+    </div>
+</div>
+
+
+<script>
+    drawCanvas();
+    drawSnake();
+    onKeyPressed();
+</script>
+
+
+</body>
+</html>
